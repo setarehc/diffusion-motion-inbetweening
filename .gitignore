@@ -135,7 +135,6 @@ dataset/
 kit/
 t2m/
 glove/
-assets/
 body_models/
 .vscode/
 wandb/
