@@ -91,8 +91,8 @@ There are two paths to get the data:
 cd ..
 git clone https://github.com/EricGuo5513/HumanML3D.git
 unzip ./HumanML3D/HumanML3D/texts.zip -d ./HumanML3D/HumanML3D/
-cp -r HumanML3D/HumanML3D guided-motion-diffusion/dataset/HumanML3D
-cd guided-motion-diffusion
+cp -r HumanML3D/HumanML3D diffusion-motion-inbetweening/dataset/HumanML3D
+cd diffusion-motion-inbetweening
 cp -a dataset/HumanML3D_abs/. dataset/HumanML3D/
 ```
 
