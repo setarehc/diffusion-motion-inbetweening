@@ -17,7 +17,7 @@ import data_loaders.humanml.utils.paramUtil as paramUtil
 from data_loaders.humanml.utils.plot_script import plot_3d_motion
 import shutil
 from data_loaders.tensors import collate
-from data_loaders.amass.utils import utils
+from data_loaders.amass.utils.utils import batch_to_dict, dict_to_batch
 
 
 def get_max_length(dataset):
@@ -158,9 +158,9 @@ def main():
 
         elif args.dataset == 'amass':
             sample = sample.cpu().permute(0, 2, 3, 1) # batch_size, 1, 128, 764
-            sample_dict = utils.batch_to_dict(sample)
+            sample_dict = batch_to_dict(sample)
             denormalized_sample_dict = data.dataset.denormalize(sample_dict)
-            sample = utils.dict_to_batch(denormalized_sample_dict)
+            sample = dict_to_batch(denormalized_sample_dict)
 
         rot2xyz_pose_rep = 'xyz' if model.data_rep in ['xyz', 'hml_vec'] else model.data_rep
         rot2xyz_mask = None if rot2xyz_pose_rep == 'xyz' else model_kwargs['y']['mask'].reshape(args.batch_size, n_frames).bool()

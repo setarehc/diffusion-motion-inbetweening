@@ -8,7 +8,6 @@ from data_loaders.amass.utils.helper_functions import estimate_angular_velocity,
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-fk = ForwardKinematicsLayer()
 fps = 30
 root_transform = True
 v_axis = [0, 1]
@@ -27,7 +26,7 @@ def dict_to_batch(data_dict):
 def transform_one(gt_data, data, save_path=None):
     assert gt_data['rotmat'].shape == data['rotmat'].shape
     b_size, n_frames, n_joints = data['rotmat'].shape[:3]
-
+    fk = ForwardKinematicsLayer()
     saved_data = {}
 
     save_to_path = save_path is not None
@@ -79,7 +78,7 @@ def transform_one(gt_data, data, save_path=None):
 
 def save_data(data, save_path=None, gt=True):
     b_size, n_frames, n_joints = data['rotmat'].shape[:3]
-
+    fk = ForwardKinematicsLayer()
     saved_data = {}
 
     save_to_path = save_path is not None
@@ -126,6 +125,7 @@ def save_data(data, save_path=None, gt=True):
 def prep_to_save(data):
     # prepares data from dataset format to save format - T1
     saved_data = {}
+    fk = ForwardKinematicsLayer()
 
     b_size, n_frames, n_joints = data['rotmat'].shape[:3]
 
@@ -163,6 +163,7 @@ def load_data(files, max_samples=400):
     poses = []
     trans = []
     assert len(files) != 0, 'files not found'
+    fk = ForwardKinematicsLayer()
 
     max_samples = min(max_samples, len(files))
     for f in files[:max_samples]:
@@ -218,6 +219,7 @@ def load_data(files, max_samples=400):
 def prep_to_load(data):
     # prepares data from save format to loaded data format - T2
     # this is what inputed to the prior model for FID/FS score computations
+    fk = ForwardKinematicsLayer()
     trans = torch.from_numpy(data['trans']).to(device)  # global translation (B, T, 3)
     b_size, n_frames = trans.shape[:2]
     poses = torch.from_numpy(data['poses']).to(device)  # axis-angle (B, T, 165)
