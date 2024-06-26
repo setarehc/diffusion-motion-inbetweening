@@ -255,29 +255,6 @@ def prep_to_load(data):
     return data
 
 
-def batch_to_dict(batch):
-    # batch.shape = (batch_size, 1, 128, 764)
-    batch_size, nfeats, nframes, njoints = batch.shape
-
-    assert njoints == 764 # TODO: write for args.amass_fields == 'hml'
-
-    data_dict = {}
-
-    data_dict['trans'] = batch[..., 0:3].squeeze(1)
-    data_dict['rotmat'] = batch[..., 3:3+24*3*3].reshape(batch_size, nfeats, nframes, 24, 3, 3).squeeze(1) # redundant
-    data_dict['pos'] = batch[..., 219:219+24*3].reshape(batch_size, nfeats, nframes, 24, 3).squeeze(1)
-    data_dict['angular'] = batch[..., 291:291+24*3].reshape(batch_size, nfeats, nframes, 24, 3).squeeze(1)
-    data_dict['contacts'] = batch[..., 363:363+8].squeeze(1)
-    data_dict['height'] = batch[..., 371:371+24*1].squeeze(1)
-    data_dict['root_vel'] = batch[..., 395:395+3].squeeze(1)
-    data_dict['velocity'] = batch[..., 398:398+24*3].reshape(batch_size, nfeats, nframes, 24, 3).squeeze(1)
-    data_dict['global_xform'] = batch[..., 470:470+24*6].reshape(batch_size, nfeats, nframes, 24, 6).squeeze(1)
-    data_dict['root_orient'] = batch[..., 614:614+6].squeeze(1)
-    data_dict['rot6d'] = batch[..., 620:].reshape(batch_size, nfeats, nframes, 24, 6).squeeze(1)
-
-    return data_dict
-
-
 def dict_to_xyz(data_dict):
     r_rot_quat = cont6d_to_quaternion(data_dict['root_orient']) # (B, T, 4)
     r_pos = data_dict['trans'] # (B, T, 3)

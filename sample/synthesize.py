@@ -17,7 +17,39 @@ import data_loaders.humanml.utils.paramUtil as paramUtil
 from data_loaders.humanml.utils.plot_script import plot_3d_motion
 import shutil
 from data_loaders.tensors import collate
-from data_loaders.amass.utils import utils
+
+
+def dict_to_batch(data_dict):
+    data = []
+    batch_size, n_frames = data_dict['pos'].shape[:2]
+    for key, value in data_dict.items():
+        assert value.shape[0] == batch_size and value.shape[1] == n_frames
+        data.append(value.reshape(batch_size, n_frames, -1))
+    data = torch.cat(data, dim=-1)
+    return data.unsqueeze(1)
+
+
+def batch_to_dict(batch):
+    # batch.shape = (batch_size, 1, 128, 764)
+    batch_size, nfeats, nframes, njoints = batch.shape
+
+    assert njoints == 764 # TODO: write for args.amass_fields == 'hml'
+
+    data_dict = {}
+
+    data_dict['trans'] = batch[..., 0:3].squeeze(1)
+    data_dict['rotmat'] = batch[..., 3:3+24*3*3].reshape(batch_size, nfeats, nframes, 24, 3, 3).squeeze(1) # redundant
+    data_dict['pos'] = batch[..., 219:219+24*3].reshape(batch_size, nfeats, nframes, 24, 3).squeeze(1)
+    data_dict['angular'] = batch[..., 291:291+24*3].reshape(batch_size, nfeats, nframes, 24, 3).squeeze(1)
+    data_dict['contacts'] = batch[..., 363:363+8].squeeze(1)
+    data_dict['height'] = batch[..., 371:371+24*1].squeeze(1)
+    data_dict['root_vel'] = batch[..., 395:395+3].squeeze(1)
+    data_dict['velocity'] = batch[..., 398:398+24*3].reshape(batch_size, nfeats, nframes, 24, 3).squeeze(1)
+    data_dict['global_xform'] = batch[..., 470:470+24*6].reshape(batch_size, nfeats, nframes, 24, 6).squeeze(1)
+    data_dict['root_orient'] = batch[..., 614:614+6].squeeze(1)
+    data_dict['rot6d'] = batch[..., 620:].reshape(batch_size, nfeats, nframes, 24, 6).squeeze(1)
+
+    return data_dict
 
 
 def get_max_length(dataset):
@@ -158,9 +190,9 @@ def main():
 
         elif args.dataset == 'amass':
             sample = sample.cpu().permute(0, 2, 3, 1) # batch_size, 1, 128, 764
-            sample_dict = utils.batch_to_dict(sample)
+            sample_dict = batch_to_dict(sample)
             denormalized_sample_dict = data.dataset.denormalize(sample_dict)
-            sample = utils.dict_to_batch(denormalized_sample_dict)
+            sample = dict_to_batch(denormalized_sample_dict)
 
         rot2xyz_pose_rep = 'xyz' if model.data_rep in ['xyz', 'hml_vec'] else model.data_rep
         rot2xyz_mask = None if rot2xyz_pose_rep == 'xyz' else model_kwargs['y']['mask'].reshape(args.batch_size, n_frames).bool()
