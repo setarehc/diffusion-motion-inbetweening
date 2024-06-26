@@ -14,16 +14,6 @@ root_transform = True
 v_axis = [0, 1]
 
 
-def dict_to_batch(data_dict):
-    data = []
-    batch_size, n_frames = data_dict['pos'].shape[:2]
-    for key, value in data_dict.items():
-        assert value.shape[0] == batch_size and value.shape[1] == n_frames
-        data.append(value.reshape(batch_size, n_frames, -1))
-    data = torch.cat(data, dim=-1)
-    return data.unsqueeze(1)
-
-
 def transform_one(gt_data, data, save_path=None):
     assert gt_data['rotmat'].shape == data['rotmat'].shape
     b_size, n_frames, n_joints = data['rotmat'].shape[:3]
