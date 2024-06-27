@@ -42,7 +42,7 @@ For windows use [this](https://www.geeksforgeeks.org/how-to-install-ffmpeg-on-wi
 
 
 ### 2. Install dependencies
-This codebase shares a large part of its base dependencies with [GMD](https://github.com/korrawe/guided-motion-diffusion/blob/main/README.md). We recommend installing our dependencies from scratch to avoid version differences.
+This codebase shares a large part of its base dependencies with [GMD](https://github.com/korrawe/guided-motion-diffusion). We recommend installing our dependencies from scratch to avoid version differences.
 
 Setup virtual env:
 ```shell
@@ -164,7 +164,7 @@ python -m sample.edit --model_path ./save/condmdi_uncond/model000500000.pt --edi
 python -m sample.conditional_synthesis --model_path ./save/condmdi_randomframes/model000750000.pt --edit_mode benchmark_sparse --transition_length 5 --num_samples 10 --num_repetitions 3 --text_prompt "a person throws a ball"
 ```
 
-### Generate from a test set prompts - condition on keyframe locations
+### Generate from test set prompts - condition on keyframe locations
 #### using the conditional model
 ```shell
 python -m sample.conditional_synthesis --model_path ./save/condmdi_randomframes/model000750000.pt --edit_mode benchmark_sparse --transition_length 5 --num_samples 10 --num_repetitions 3
@@ -173,6 +173,14 @@ python -m sample.conditional_synthesis --model_path ./save/condmdi_randomframes/
 
 (In development) Using the `--interactive` flag will start an interactive window that allows you to choose the keyframes yourself. The interactive pattern will override the predefined pattern.
 ![example](assets/example_conditional_sparse_T=5.gif)
+
+
+**Useful flags for spatial conditioning:**
+* `--edit_mode` to indicate the type of spatial condition.
+* `--imputation` to use imputation/inpainting for inference-time conditioning.
+    * `stop_imputation_at` to indicate the diffusion step to stop replacement. Default is 0.
+* `--reconstruction_guidance` to use reconstruction guidance for inference-time conditioning.
+    * `--reconstruction_weight` to indicate the reconstruction guidance weight ($w_r$ in Algorithm 3)
 </details>
 
 **You may also define:**
@@ -182,7 +190,6 @@ python -m sample.conditional_synthesis --model_path ./save/condmdi_randomframes/
 * `--progress` to save the denosing progress.
 
 **Running those will get you:**
-
 * `results.npy` file with text prompts and xyz positions of the generated animation
 * `sample##_rep##.mp4` - a stick figure animation for each generated motion.
 You can stop here, or render the SMPL mesh using the following script.
