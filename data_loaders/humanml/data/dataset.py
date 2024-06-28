@@ -407,8 +407,8 @@ class Text2MotionDatasetV2(data.Dataset):
         motion, m_length, text_list = data['motion'], data['length'], data[
             'text']
         # Randomly select a caption
-        # text_data = random.choice(text_list)
-        text_data = text_list[0] # for rebuttal experiments
+        text_data = random.choice(text_list)
+        # text_data = text_list[0] # for rebuttal experiments
         caption, tokens = text_data['caption'], text_data['tokens']
 
         if len(tokens) < self.opt.max_text_len:
@@ -432,19 +432,19 @@ class Text2MotionDatasetV2(data.Dataset):
         word_embeddings = np.concatenate(word_embeddings, axis=0)
 
         # Crop the motions in to times of 4, and introduce small variations
-        # if self.opt.unit_length < 10:
-        #     coin2 = np.random.choice(['single', 'single', 'double'])
-        # else:
-        #     coin2 = 'single'
+        if self.opt.unit_length < 10:
+            coin2 = np.random.choice(['single', 'single', 'double'])
+        else:
+            coin2 = 'single'
 
-        # if coin2 == 'double':
-        #     m_length = (m_length // self.opt.unit_length -
-        #                 1) * self.opt.unit_length
-        # elif coin2 == 'single':
-        #     m_length = (m_length //
-        #                 self.opt.unit_length) * self.opt.unit_length
-        # idx = random.randint(0, len(motion) - m_length)
-        # motion = motion[idx:idx + m_length]
+        if coin2 == 'double':
+            m_length = (m_length // self.opt.unit_length -
+                        1) * self.opt.unit_length
+        elif coin2 == 'single':
+            m_length = (m_length //
+                        self.opt.unit_length) * self.opt.unit_length
+        idx = random.randint(0, len(motion) - m_length)
+        motion = motion[idx:idx + m_length]
 
         # NOTE: if used for training trajectory model, discard all but the first 4 values
         if self.traject_only:
