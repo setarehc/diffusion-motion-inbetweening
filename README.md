@@ -141,7 +141,7 @@ python -m sample.conditional_synthesis --model_path ./save/condmdi_randomframes/
 ### Generate from a single prompt
 #### using the unconditioned model
 ```shell
-python -m sample.synthesis --model_path ./save/condmdi_uncond/model000500000.pt --num_samples 10 --num_repetitions 1 --text_prompt "a person is exercising and jumping"
+python -m sample.synthesize --model_path ./save/condmdi_uncond/model000500000.pt --num_samples 10 --num_repetitions 1 --text_prompt "a person is exercising and jumping"
 ```
 #### using the conditional model
 ```shell
