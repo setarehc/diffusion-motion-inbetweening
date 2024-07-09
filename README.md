@@ -115,6 +115,8 @@ Download the model(s) you wish to use, then unzip and place them in `./save/`.
 
 Our models are all trained on the HumanML3D dataset.
 
+[Conditionally trained on randomly sampled frames and joints (CondMDI)](https://drive.google.com/file/d/1aP-z1JxSCTcUHhMqqdL2wbwQJUZWHT2j/view?usp=sharing)
+
 [Conditionally trained on randomly sampled frames](https://drive.google.com/file/d/15mYPp2U0VamWfu1SnwCukUUHczY9RPIP/view?usp=sharing)
 
 [Unconditionally (no keyframes) trained](https://drive.google.com/file/d/1B0PYpmCXXwV0a5mhkgea_J2pOwhYy-k5/view?usp=sharing)
