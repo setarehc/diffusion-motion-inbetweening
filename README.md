@@ -78,7 +78,7 @@ bash prepare/download_recognition_unconstrained_models.sh
 ### 2. Get data
 There are two paths to get the data:
 
-(a) **Generation only** wtih pretrained text-to-motion model without training or evaluating
+(a) **Generation only** with pretrained text-to-motion model without training or evaluating
 
 (b) **Get full data** to train and evaluate the model.
 
@@ -156,7 +156,7 @@ python -m sample.conditional_synthesis --model_path ./save/condmdi_randomframes/
   <summary><b>Text to Motion - <u>With</u> keyframe conditioning</b></summary>
 
 ### Generate from a single prompt - condition on keyframe locations
-#### using the uncoditioned model
+#### using the unconditioned model
 ```shell
 python -m sample.edit --model_path ./save/condmdi_uncond/model000500000.pt --edit_mode benchmark_sparse --transition_length 5 --num_samples 10 --num_repetitions 3 --imputate --stop_imputation_at 1 --reconstruction_guidance --reconstruction_weight 20 --text_condition "a person throws a ball"
 ```
@@ -189,7 +189,7 @@ python -m sample.conditional_synthesis --model_path ./save/condmdi_randomframes/
 * `--device` id.
 * `--seed` to sample different prompts.
 * `--motion_length` (text-to-motion only) in seconds (maximum is 9.8[sec]).
-* `--progress` to save the denosing progress.
+* `--progress` to save the denoising progress.
 
 **Running those will get you:**
 * `results.npy` file with text prompts and xyz positions of the generated animation
@@ -227,11 +227,11 @@ Our model is trained on the **HumanML3D** dataset.
 ```shell
 python -m train.train_condmdi --keyframe_conditioned
 ```
-* You can ramove `--keyframe_conditioned` to train a unconditioned model.
+* You can remove `--keyframe_conditioned` to train a unconditioned model.
 * Use `--device` to define GPU id.
 
 ## Evaluate
-All evaluation are done on the HumanML3D dataset.
+All evaluations are done on the HumanML3D dataset.
 
 ### Text to Motion - <u>With</u> keyframe conditioning
 
@@ -247,7 +247,7 @@ python -m eval.eval_humanml_condmdi --model_path ./save/condmdi_uncond/model0005
 
 #### on the conditional model
 ```shell
-python -m eval.eval_humanml_condmdi --model_path ./save/condmdi_randomframes/model000750000.pt --edit_mode gmd_keyframes --keyframe_guidance_param 1.
+python -m eval.eval_humanml_condmdi --model_path ./save/condmdi_randomframes/model000750000.pt --edit_mode gmd_keyframes --keyframe_guidance_param 1
 ```
 
 
