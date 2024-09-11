@@ -139,3 +139,6 @@ glove/
 body_models/
 .vscode/
 wandb/
+
+# vim swaps
+.*.sw?
