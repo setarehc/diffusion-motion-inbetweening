@@ -198,7 +198,7 @@ class TrainLoop:
     def run_loop(self):
         print('train steps:', self.num_steps)
         for epoch in range(self.num_epochs):
-            print(f'Starting epoch {epoch}')
+            print(f'Starting epoch {epoch} / {self.num_epochs}')
             for motion, cond in tqdm(self.data):
                 if not (not self.lr_anneal_steps or
                         self.step + self.resume_step < self.lr_anneal_steps):
