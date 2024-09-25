@@ -15,7 +15,7 @@ class npy2obj:
         self.motions = self.motions[None][0]
         self.rot2xyz = Rotation2xyz(device='cpu')
         self.faces = self.rot2xyz.smpl_model.faces
-        self.bs, self.njoints, self.nfeats, self.nframes = self.motions['motion'].shape
+        self.bs, self.njoints, self.nfeats, self.nframes = self.motions['motion'][0].shape
         self.opt_cache = {}
         self.sample_idx = sample_idx
         self.total_num_samples = self.motions['num_samples']
@@ -26,12 +26,12 @@ class npy2obj:
 
         if self.nfeats == 3:
             print(f'Running SMPLify For sample [{sample_idx}], repetition [{rep_idx}], it may take a few minutes.')
-            motion_tensor, opt_dict = self.j2s.joint2smpl(self.motions['motion'][self.absl_idx].transpose(2, 0, 1))  # [nframes, njoints, 3]
-            self.motions['motion'] = motion_tensor.cpu().numpy()
+            motion_tensor, opt_dict = self.j2s.joint2smpl(self.motions['motion'][0][self.absl_idx].transpose(2, 0, 1))  # [nframes, njoints, 3]
+            self.motions['motion'] = motion_tensor.cpu().numpy()        # how does this change to (1, 25, 6, 196) from (1, 22, 3, 196)??
         elif self.nfeats == 6:
             self.motions['motion'] = self.motions['motion'][[self.absl_idx]]
         self.bs, self.njoints, self.nfeats, self.nframes = self.motions['motion'].shape
-        self.real_num_frames = self.motions['lengths'][self.absl_idx]
+        self.real_num_frames = self.motions['lengths'][0][self.absl_idx]
 
         self.vertices = self.rot2xyz(torch.tensor(self.motions['motion']), mask=None,
                                      pose_rep='rot6d', translation=True, glob=True,
