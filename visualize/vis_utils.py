@@ -40,10 +40,6 @@ class npy2obj:
                                      vertstrans=True)
         self.root_loc = self.motions['motion'][:, -1, :3, :].reshape(1, 1, 3, -1)
 
-        # import pdb; pdb.set_trace()
-        # self.vertices += self.root_loc
-        # self.vertices[:, :, 1, :] += self.root_loc[:, :, 1, :]
-
     def get_vertices(self, sample_i, frame_i):
         return self.vertices[sample_i, :, :, frame_i].squeeze().tolist()
 
@@ -52,11 +48,8 @@ class npy2obj:
                        faces=self.faces)
     
     def get_traj_sphere(self, mesh):
-        # import pdb; pdb.set_trace()
         root_posi = np.copy(mesh.vertices).mean(0) # (6000, 3)
-        # import pdb; pdb.set_trace()
-        # root_posi[1] = mesh.vertices.min(0)[1] + 0.1
-        root_posi[1]  = self.vertices.numpy().min(axis=(0, 1, 3))[1] + 0.1
+        root_posi[1]  = self.vertices.numpy().min(axis=(0, 1, 3))[1] + 0.1      # why use min() from 3 axes?
         mesh = trimesh.primitives.Sphere(radius=0.05, center=root_posi, transform=None, subdivisions=1)
         return mesh
 
