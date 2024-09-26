@@ -139,3 +139,16 @@ glove/
 body_models/
 .vscode/
 wandb/
+
+# vim swaps
+.*.sw?
+
+# tarballs and zips
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.gz
+*.7z
+*.bzip
+*.bz2
