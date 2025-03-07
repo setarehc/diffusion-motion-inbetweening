@@ -106,7 +106,7 @@ class DataOptions:
                          metadata={
                              "help": "Dataset name (choose from list).",
                              "choices":
-                             ['humanml', 'kit', 'humanact12', 'uestc', 'amass']
+                             ['humanml', 'kit', 'humanact12', 'uestc', 'amass', 'custom']   ## FIXME: custom is temporary
                          })
     data_dir: str = field(
         default="",

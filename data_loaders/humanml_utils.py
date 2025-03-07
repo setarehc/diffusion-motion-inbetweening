@@ -65,27 +65,27 @@ HML_LOWER_BODY_RIGHT_MASK = np.concatenate(([True]*(1+2+1),
 
 
 # Matrix that shows joint correspondces to SMPL features
-MAT_POS = np.zeros((22, 263), dtype=np.bool)
+MAT_POS = np.zeros((22, 263), dtype=bool)
 MAT_POS[0, 1:4] = True
 for joint_idx in range(1, 22):
     ub = 4 + 3 * joint_idx
     lb = ub - 3
     MAT_POS[joint_idx, lb:ub] = True
 
-MAT_ROT = np.zeros((22, 263), dtype=np.bool)
+MAT_ROT = np.zeros((22, 263), dtype=bool)
 MAT_ROT[0, 0] = True
 for joint_idx in range(1, 22):
     ub = 4 + 21*3 + 6 * joint_idx
     lb = ub - 6
     MAT_ROT[joint_idx, lb:ub] = True
 
-MAT_VEL = np.zeros((22, 263), dtype=np.bool)
+MAT_VEL = np.zeros((22, 263), dtype=bool)
 for joint_idx in range(0, 22):
     ub = 4 + 21*3 + 21*6 + 3 * (joint_idx + 1)
     lb = ub - 3
     MAT_VEL[joint_idx, lb:ub] = True
 
-MAT_CNT = np.zeros((22, 263), dtype=np.bool)
+MAT_CNT = np.zeros((22, 263), dtype=bool)
 MAT_CNT[7, -4] = True
 MAT_CNT[10, -3] = True
 MAT_CNT[8, -2] = True

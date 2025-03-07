@@ -15,7 +15,7 @@ from diffusion.fp16_util import MixedPrecisionTrainer
 from diffusion.resample import LossAwareSampler, UniformSampler
 from tqdm import tqdm
 from diffusion.resample import create_named_schedule_sampler
-from data_loaders.humanml.networks.evaluator_wrapper import EvaluatorMDMWrapper
+# from data_loaders.humanml.networks.evaluator_wrapper import EvaluatorMDMWrapper
 from eval import eval_humanml, eval_humanact12_uestc
 from data_loaders.get_data import get_dataset_loader
 from torch.cuda import amp
@@ -61,7 +61,10 @@ class TrainLoop:
         self.resume_step = 0
         self.global_batch = self.batch_size  # * dist.get_world_size()
         self.num_steps = args.num_steps
-        self.num_epochs = self.num_steps // len(self.data) + 1
+        try:
+            self.num_epochs = self.num_steps // len(self.data) + 1
+        except ZeroDivisionError:
+            print(f"We have {len(self.data)} data ... over {self.num_steps} steps?")
 
         self.sync_cuda = torch.cuda.is_available()
 
@@ -105,37 +108,8 @@ class TrainLoop:
             self.schedule_sampler_type, diffusion)
         self.eval_wrapper, self.eval_data, self.eval_gt_data = None, None, None
         if args.dataset in ['kit', 'humanml'] and args.eval_during_training:
-            raise NotImplementedError()
-            mm_num_samples = 0  # mm is super slow hence we won't run it during training
-            mm_num_repeats = 0  # mm is super slow hence we won't run it during training
-            gen_loader = get_dataset_loader(name=args.dataset,
-                                            batch_size=args.eval_batch_size,
-                                            num_frames=None,
-                                            split=args.eval_split,
-                                            hml_mode='eval')
+            raise NotImplementedError() # check git history for previous eval_during_training code
 
-            self.eval_gt_data = get_dataset_loader(
-                name=args.dataset,
-                batch_size=args.eval_batch_size,
-                num_frames=None,
-                split=args.eval_split,
-                hml_mode='gt')
-            self.eval_wrapper = EvaluatorMDMWrapper(args.dataset,
-                                                    dist_util.dev())
-            self.eval_data = {
-                'test':
-                lambda: eval_humanml.get_mdm_loader(
-                    model,
-                    diffusion,
-                    args.eval_batch_size,
-                    gen_loader,
-                    mm_num_samples,
-                    mm_num_repeats,
-                    gen_loader.dataset.opt.max_motion_length,
-                    args.eval_num_samples,
-                    scale=1.,
-                )
-            }
         self.use_ddp = False
         self.ddp_model = self.model
 
@@ -198,7 +172,7 @@ class TrainLoop:
     def run_loop(self):
         print('train steps:', self.num_steps)
         for epoch in range(self.num_epochs):
-            print(f'Starting epoch {epoch}')
+            print(f'Starting epoch {epoch} / {self.num_epochs}')
             for motion, cond in tqdm(self.data):
                 if not (not self.lr_anneal_steps or
                         self.step + self.resume_step < self.lr_anneal_steps):

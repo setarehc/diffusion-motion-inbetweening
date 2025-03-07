@@ -3,6 +3,7 @@ from typing import Union
 import torch
 from torch import nn
 from data_loaders.humanml.data.dataset import Text2MotionDatasetV2, HumanML3D, TextOnlyDataset
+from data_loaders.custom.data.dataset import CustomRig
 
 from diffusion import gaussian_diffusion as gd
 from diffusion.respace import DiffusionConfig, SpacedDiffusion, space_timesteps
@@ -13,7 +14,7 @@ from utils.parser_util import DataOptions, DiffusionOptions, ModelOptions, Train
 from torch.utils.data import DataLoader
 
 FullModelOptions = Union[DataOptions, ModelOptions, DiffusionOptions, TrainingOptions]
-Datasets = Union[Text2MotionDatasetV2, HumanML3D, TextOnlyDataset]
+Datasets = Union[Text2MotionDatasetV2, HumanML3D, CustomRig, TextOnlyDataset]
 
 
 def load_model_wo_clip(model: nn.Module, state_dict):
@@ -43,12 +44,9 @@ def get_model_args(args: FullModelOptions, data: DataLoader):
     action_emb = 'tensor'
     if args.unconstrained:
         cond_mode = 'no_cond'
-    elif args.dataset == 'amass':
-        cond_mode = 'no_cond'
-    elif args.dataset in ['kit', 'humanml']:
-        cond_mode = 'text'
     else:
-        cond_mode = 'action'
+        cond_mode = "action"
+
     if hasattr(data.dataset, 'num_actions'):
         num_actions = data.dataset.num_actions
     else:
@@ -66,14 +64,22 @@ def get_model_args(args: FullModelOptions, data: DataLoader):
             njoints = 67 # 4 + 21 * 3
         else:
             njoints = 263
+        cond_mode = "text"
     elif args.dataset == 'kit':
         data_rep = 'hml_vec'
         njoints = 251
         nfeats = 1
+        cond_mode = "text"
     elif args.dataset == 'amass':
         data_rep = 'hml_vec' # FIXME: find what is the correct data rep
         njoints = 764
         nfeats = 1
+        cond_mode = "no_cond"
+    elif args.dataset == "custom": ## FIXME: find out how to use proper values for custom here
+        data_rep = "hml_vec"
+        njoints = 323 # FIXME: once custom is imported correctly, replace this with (n_joints * 12 - 1)
+        nfeats = 1
+        cond_mode = "text"
 
     # Only produce trajectory (4 values: rot, x, z, y)
     if args.traj_only:

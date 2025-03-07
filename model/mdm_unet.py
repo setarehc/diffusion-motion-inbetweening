@@ -638,6 +638,8 @@ class MDM_UNET(nn.Module):
                 added_channels = 263
             elif self.dataset == 'amass':
                 added_channels = 764
+            elif self.dataset == "custom":
+                added_channels = 323    ## FIXME: find joints_num if possible, 12 * (joints_num - 1)
         else:
             added_channels = 0
         self.input_feats = 2 if xz_only else self.njoints * self.nfeats
@@ -740,7 +742,7 @@ class MDM_UNET(nn.Module):
         # raw_text - list (batch_size length) of strings with input text prompts
         device = next(self.parameters()).device
         max_text_len = 20 if self.dataset in [
-            'humanml', 'kit'
+            'humanml', 'kit', 'custom'                    ## FIXME: need to update custom info here
         ] else None  # Specific hardcoding for humanml dataset
         if max_text_len is not None:
             default_context_length = 77
@@ -777,7 +779,7 @@ class MDM_UNET(nn.Module):
         """
         assert (obs_x0 is None) == (obs_mask is None), 'with spatial-conditioning, both obs_x0 and obs_mask must be provided'
         if self.keyframe_conditioned:
-            assert self.dataset in ['humanml', 'amass']
+            assert self.dataset in ['humanml', 'amass', "custom"]
             x = obs_x0 * obs_mask + x * (~obs_mask)
             x = torch.cat([x, obs_mask], dim=1)
         return self.forward_core(x, timesteps, y)
@@ -832,7 +834,12 @@ class MDM_UNET(nn.Module):
                 x = tmp
         # just reshape the output nothing else
         if self.keyframe_conditioned:
-            njoints = 263 if self.dataset == 'humanml' else 764
+            if self.dataset == "humanml":
+                njoints = 263
+            elif self.dataset == "custom":
+                njoints = 323 # FIXME: set to (27 * 12 - 1) once input processing is corrected
+            else:
+                njoints = 764
         x = x.reshape(nframes, bs, njoints, nfeats)
 
         # NOTE: TODO: move the following to gaussian_diffusion.py

@@ -37,7 +37,7 @@ def init_wandb(config, project_name=None, entity=None, tags=[], notes=None, **kw
 
 
 def main():
-    args = train_args(base_cls=card.motion_abs_unet_adagn_xl) # Choose the default full motion model from GMD
+    args = train_args(base_cls=card.motion_abs_unet_adagn_xl_custom_batch) # Choose the default full motion model from GMD
     init_wandb(config=args)
     args.save_dir = os.path.join("save", wandb.run.id)
     pprint(args.__dict__)

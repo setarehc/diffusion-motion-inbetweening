@@ -25,6 +25,7 @@ gpu_id: 3
 input_z: False
 is_continue: True
 is_train: True
+joints_num: 27
 lambda_fake: 10
 lambda_gan_l: 0.1
 lambda_gan_mt: 0.1

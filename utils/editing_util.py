@@ -2,7 +2,7 @@ import torch
 import os
 import numpy as np
 import random
-from data_loaders import humanml_utils, amass_utils
+from data_loaders import humanml_utils, amass_utils, custom_utils
 
 
 def bool_matmul(a, b):
@@ -43,6 +43,22 @@ def joint_to_full_mask(joint_mask, mode='pos_rot_vel'):
     mask = torch.stack(mask_comp, dim=0).any(dim=0) # [1, seqlen, bs, 263]
     return mask.permute(2, 3, 0, 1) # [bs, 263, 1, seqlen]
 
+def joint_to_full_mask_custom(joint_mask, mode='pos_rot_vel'):
+    assert mode in ['pos', 'pos_rot', 'pos_rot_vel']
+    # joint_mask.shape = [bs, n_joints, 1, seqlen]
+    joint_mask = joint_mask.permute(2, 3, 0, 1) # [1, seqlen, bs, n_joints]
+
+    mask_comp = []
+    mask_comp.append(bool_matmul(joint_mask, torch.tensor(custom_utils.MAT_POS)))
+    mask_comp.append(bool_matmul(joint_mask, torch.tensor(custom_utils.MAT_CNT)))
+    if mode in ['pos_rot', 'pos_rot_vel']:
+        mask_comp.append(bool_matmul(joint_mask, torch.tensor(custom_utils.MAT_ROT)))
+    if mode == 'pos_rot_vel':
+        mask_comp.append(bool_matmul(joint_mask, torch.tensor(custom_utils.MAT_VEL)))
+
+    mask = torch.stack(mask_comp, dim=0).any(dim=0) # [1, seqlen, bs, 12 * n_joints - 1]
+    return mask.permute(2, 3, 0, 1) # [bs, 12 * n_joints - 1, 1, seqlen]
+
 
 def get_random_binary_mask(dim1, dim2, n):
     valid_indices = torch.nonzero(torch.ones(dim1, dim2), as_tuple=False)
@@ -77,6 +93,8 @@ def get_keyframes_mask(data, lengths, edit_mode='benchmark_sparse', trans_length
     elif n_joints == 764:
         # AMASS dataset
         joints_dim = 24
+    elif n_joints == 323:       ## FIXME: another hidden joint check
+        joints_dim = 27
     else:
         raise ValueError('Unknown number of joints: {}'.format(n_joints))
 
@@ -217,6 +235,8 @@ def get_keyframes_mask(data, lengths, edit_mode='benchmark_sparse', trans_length
         obs_feature_mask = joint_to_full_mask(obs_joint_mask, mode=feature_mode)
     elif joints_dim == 24:
         obs_feature_mask = joint_to_full_mask_amass(obs_joint_mask, mode='all')
+    elif joints_dim == 27:
+        obs_feature_mask = joint_to_full_mask_custom(obs_joint_mask, mode=feature_mode)
     else:
         raise NotImplementedError(f"Unknown number of joints: {joints_dim}")
 

@@ -56,14 +56,25 @@ def main():
     args = cond_synt_args()
     fixseed(args.seed)
 
-    assert args.dataset == 'humanml' and args.abs_3d # Only humanml dataset and the absolute root representation is supported for conditional synthesis
+    assert args.dataset in ["humanml", "custom"] and args.abs_3d # Only humanml dataset and the absolute root representation is supported for conditional synthesis
     assert args.keyframe_conditioned
 
     out_path = args.output_dir
     name = os.path.basename(os.path.dirname(args.model_path))
     niter = os.path.basename(args.model_path).replace('model', '').replace('.pt', '')
-    max_frames = 196 if args.dataset in ['kit', 'humanml'] else (200 if args.dataset == 'trajectories' else 60)
-    fps = 12.5 if args.dataset == 'kit' else 20
+    fps = 20
+    if args.dataset == "kit":
+        max_frames = 196
+        fps = 12.5
+    elif args.dataset == "humanml":
+        max_frames = 196
+    elif args.dataset == "trajectories":
+        max_frames = 200
+    elif args.dataset == "custom":      ## FIXME: need a better way to handle inference for custom
+        max_frames = 196
+        fps = 25
+    else:
+        max_frames = 60
     dist_util.setup_dist(args.device)
     if out_path == '':
         checkpoint_name = os.path.split(os.path.dirname(args.model_path))[-1]
@@ -228,7 +239,11 @@ def main():
 
         # Unnormalize samples and recover XYZ *positions*
         if model.data_rep == 'hml_vec':
-            n_joints = 22 if (sample.shape[1] in [263, 264]) else 21
+            n_joints = 21       # default value here first
+            if sample.shape[1] in [263, 264]:
+                n_joints = 22
+            elif sample.shape[1] == 323:      ## FIXME: hardcoded branch for current custom rig
+                n_joints = 27
             sample = sample.cpu().permute(0, 2, 3, 1)
             sample = data.dataset.t2m_dataset.inv_transform(sample).float()
             sample = recover_from_ric(sample, n_joints, abs_3d=args.abs_3d)

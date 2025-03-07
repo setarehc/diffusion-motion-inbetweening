@@ -21,6 +21,10 @@ def get_dataset_class(name):
     elif name == "kit":
         from data_loaders.humanml.data.dataset import KIT
         return KIT
+    elif name == "custom":
+        print(f">>> (DEBUG) >>> Attempting to use {name} ...")
+        from data_loaders.custom.data.dataset import CustomRig as custom
+        return custom
     else:
         raise ValueError(f'Unsupported dataset name [{name}]')
 
@@ -33,6 +37,9 @@ def get_collate_fn(name, hml_mode='train'):
         return t2m_collate
     elif name == 'amass':
         return amass_collate
+    elif name == "custom":
+        print(f">>> (DEBUG) >>> Using t2m_collate for the {name} dataset")
+        return t2m_collate
     else:
         return all_collate
 
@@ -55,7 +62,7 @@ class DatasetConfig:
 
 def get_dataset(conf: DatasetConfig):
     DATA = get_dataset_class(conf.name)
-    if conf.name in ["humanml", "kit"]:
+    if conf.name in ["humanml", "kit", "custom"]:
         dataset = DATA(split=conf.split,
                        num_frames=conf.num_frames,
                        mode=conf.hml_mode,

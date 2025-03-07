@@ -29,6 +29,7 @@ If you find this code useful in your research, please cite:
 ## Getting started
 
 This code was developed on `Ubuntu 20.04 LTS` with Python 3.7, CUDA 11.7 and PyTorch 1.13.1.
+The current `requirements.txt` was set up with Python 3.9, CUDA 11.3, PyTorch 1.12.1.
 
 
 ### 1. Setup environment
@@ -46,12 +47,10 @@ This codebase shares a large part of its base dependencies with [GMD](https://gi
 
 Setup virtual env:
 ```shell
-python3 -m venv .env_condmdi
-source .env_condmdi/bin/activate
-pip uninstall ffmpeg
-pip install spacy
-python -m spacy download en_core_web_sm
-pip install git+https://github.com/openai/CLIP.git
+python3 -m venv .env_condmdi      # pick your preferred name here
+source .env_condmdi/bin/activate  # and use that name in place of .env_condmdi
+pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113
+pip install -r requirements.txt   # updated to include spacy and clip configuration
 ```
 
 Download dependencies:
@@ -78,36 +77,40 @@ bash prepare/download_recognition_unconstrained_models.sh
 ### 2. Get data
 There are two paths to get the data:
 
-(a) **Generation only** wtih pretrained text-to-motion model without training or evaluating
+<details>
+    <summary><b>(a) **Generation only** with pretrained text-to-motion model without training or evaluating</b></summary>
 
-(b) **Get full data** to train and evaluate the model.
+    #### a. Generation only (text only)
 
+    **HumanML3D** - Clone HumanML3D, then copy the data dir to our repository:
 
-#### a. Generation only (text only)
+    ```shell
+    cd ..
+    git clone https://github.com/EricGuo5513/HumanML3D.git
+    unzip ./HumanML3D/HumanML3D/texts.zip -d ./HumanML3D/HumanML3D/
+    cp -r HumanML3D/HumanML3D diffusion-motion-inbetweening/dataset/HumanML3D
+    cd CondMDI
+    cp -a dataset/HumanML3D_abs/. dataset/HumanML3D/
+    ```
+</details>
 
-**HumanML3D** - Clone HumanML3D, then copy the data dir to our repository:
+<details>
+    <summary><b>(b) **Get full data** to train and evaluate the model.</b></summary>
 
-```shell
-cd ..
-git clone https://github.com/EricGuo5513/HumanML3D.git
-unzip ./HumanML3D/HumanML3D/texts.zip -d ./HumanML3D/HumanML3D/
-cp -r HumanML3D/HumanML3D diffusion-motion-inbetweening/dataset/HumanML3D
-cd diffusion-motion-inbetweening
-cp -a dataset/HumanML3D_abs/. dataset/HumanML3D/
-```
+    #### b. Full data (text + motion capture)
 
+    **HumanML3D** - Follow the instructions in [HumanML3D](https://github.com/EricGuo5513/HumanML3D.git),
+    then copy the result dataset to our repository:
 
-#### b. Full data (text + motion capture)
+    **[Important !]**
+    Following GMD, the representation of the root joint has been changed from relative to absolute. Therefore, when setting up HumanML3D, please
+    run GMD's version of `motion_representation.ipynb` and `cal_mean_variance.ipynb` instead to get the absolute-root data. These files are made
+    available in `./dataset/HumanML3D_abs/`.
 
-**[Important !]**
-Following GMD, the representation of the root joint has been changed from relative to absolute. Therefore, you need to replace the original files and run GMD's version of `motion_representation.ipynb` and `cal_mean_variance.ipynb` provided in `./HumanML3D_abs/` instead to get the absolute-root data.
-
-**HumanML3D** - Follow the instructions in [HumanML3D](https://github.com/EricGuo5513/HumanML3D.git),
-then copy the result dataset to our repository:
-
-```shell
-cp -r ../HumanML3D/HumanML3D ./dataset/HumanML3D
-```
+    ```shell
+    cp -r ../HumanML3D/HumanML3D ./dataset/HumanML3D
+    ```
+</details>
 
 ### 3. Download the pretrained models
 
@@ -156,7 +159,7 @@ python -m sample.conditional_synthesis --model_path ./save/condmdi_randomframes/
   <summary><b>Text to Motion - <u>With</u> keyframe conditioning</b></summary>
 
 ### Generate from a single prompt - condition on keyframe locations
-#### using the uncoditioned model
+#### using the unconditioned model
 ```shell
 python -m sample.edit --model_path ./save/condmdi_uncond/model000500000.pt --edit_mode benchmark_sparse --transition_length 5 --num_samples 10 --num_repetitions 3 --imputate --stop_imputation_at 1 --reconstruction_guidance --reconstruction_weight 20 --text_condition "a person throws a ball"
 ```
@@ -189,7 +192,7 @@ python -m sample.conditional_synthesis --model_path ./save/condmdi_randomframes/
 * `--device` id.
 * `--seed` to sample different prompts.
 * `--motion_length` (text-to-motion only) in seconds (maximum is 9.8[sec]).
-* `--progress` to save the denosing progress.
+* `--progress` to save the denoising progress.
 
 **Running those will get you:**
 * `results.npy` file with text prompts and xyz positions of the generated animation
@@ -227,11 +230,11 @@ Our model is trained on the **HumanML3D** dataset.
 ```shell
 python -m train.train_condmdi --keyframe_conditioned
 ```
-* You can ramove `--keyframe_conditioned` to train a unconditioned model.
+* You can remove `--keyframe_conditioned` to train a unconditioned model.
 * Use `--device` to define GPU id.
 
 ## Evaluate
-All evaluation are done on the HumanML3D dataset.
+All evaluations are done on the HumanML3D dataset.
 
 ### Text to Motion - <u>With</u> keyframe conditioning
 
@@ -247,7 +250,7 @@ python -m eval.eval_humanml_condmdi --model_path ./save/condmdi_uncond/model0005
 
 #### on the conditional model
 ```shell
-python -m eval.eval_humanml_condmdi --model_path ./save/condmdi_randomframes/model000750000.pt --edit_mode gmd_keyframes --keyframe_guidance_param 1.
+python -m eval.eval_humanml_condmdi --model_path ./save/condmdi_randomframes/model000750000.pt --edit_mode gmd_keyframes --keyframe_guidance_param 1
 ```
 
 
